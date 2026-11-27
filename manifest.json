@@ -1,0 +1,21 @@
+{
+  "name": "실리아투스 : 크레스티드 게코 키우기",
+  "short_name": "실리아투스",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0d2019",
+  "theme_color": "#0d2019",
+  "icons": [
+    {
+      "src": "index.icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "index.apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

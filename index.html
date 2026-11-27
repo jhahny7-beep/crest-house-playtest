@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="실리아투스 : 크레스티드 게코 키우기 — 나만의 게코 섬에서 도마뱀 키우기, 모프 브리딩, 힐링 테라리움 가꾸기">
+<title>실리아투스 : 크레스티드 게코 키우기 (플레이테스트)</title>
+<link rel="icon" type="image/png" href="index.icon.png">
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --ocean-top: #3f91ba;
+  --ocean-bot: #27688c;
+  --wood-dark: #452815;
+  --wood-mid: #7d4c27;
+  --wood-hi: #b97c46;
+  --parchment: #f7efd9;
+  --parchment-soft: #ede1c2;
+  --ink: #382414;
+  --muted: #765c42;
+  --gold: #c97c16;
+  --amber-top: #ffd666;
+  --amber-bot: #e39a24;
+  --danger: #b53a2a;
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--ocean-top) 0%, var(--ocean-bot) 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  color: var(--ink);
+  touch-action: none;
+}
+#canvas {
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  transform-origin: center center;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+#canvas.ready {
+  opacity: 1;
+}
+#canvas:focus {
+  outline: none;
+}
+#gate {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  background: radial-gradient(circle at 50% 24%, rgba(255, 245, 200, 0.22), transparent 55%),
+              linear-gradient(180deg, #4da3cc 0%, #2b6f93 100%);
+  touch-action: manipulation;
+}
+#gate.hidden {
+  display: none;
+}
+.wood-card {
+  width: 100%;
+  max-width: 390px;
+  background: var(--parchment);
+  border: 4px solid var(--wood-dark);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 0 0 3px var(--wood-hi),
+    inset 0 0 0 6px var(--wood-mid),
+    0 14px 36px rgba(17, 36, 52, 0.42);
+  padding: 26px 22px 22px;
+  text-align: center;
+}
+.wood-card.shake {
+  animation: shake 0.34s ease;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  45% { transform: translateX(7px); }
+  70% { transform: translateX(-4px); }
+}
+.emblem {
+  width: 96px;
+  height: 96px;
+  border: 0;
+  background: transparent;
+  filter: drop-shadow(0 4px 6px rgba(34, 20, 10, 0.28));
+  image-rendering: auto;
+  margin: 0 auto 10px;
+  display: block;
+  object-fit: contain;
+}
+h1 {
+  margin: 0 0 4px;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.subtitle {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.pill {
+  display: inline-block;
+  background: #e4efd0;
+  border: 1.5px solid #96b56d;
+  color: #365c21;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.field-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+input[type="password"], input[type="text"] {
+  width: 100%;
+  height: 48px;
+  padding: 0 46px 0 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  background: #fffdf5;
+  border: 2.5px solid var(--wood-mid);
+  border-radius: 10px;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(69, 40, 21, 0.1);
+}
+input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(227, 154, 36, 0.25);
+}
+.toggle-eye {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.btn-enter {
+  width: 100%;
+  height: 48px;
+  border: 3px solid var(--wood-dark);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--amber-top) 0%, var(--amber-bot) 100%);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), 0 3px 0 var(--wood-dark);
+  transition: transform 0.08s ease;
+}
+.btn-enter:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 1px 0 var(--wood-dark);
+}
+.btn-enter:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.msg {
+  min-height: 20px;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  line-height: 1.4;
+}
+.msg.info {
+  color: var(--muted);
+}
+.progress-wrap {
+  display: none;
+  margin-top: 12px;
+}
+.progress-wrap.active {
+  display: block;
+}
+.progress-track {
+  width: 100%;
+  height: 14px;
+  background: var(--parchment-soft);
+  border: 2px solid var(--wood-dark);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #86c944 0%, #f0b83a 100%);
+  transition: width 0.12s linear;
+}
+.progress-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.foot-note {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1.5px dashed #d3c29c;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+<canvas id="canvas">브라우저가 HTML5 Canvas를 지원하지 않습니다.</canvas>
+
+<div id="gate">
+  <div class="wood-card" id="gate-card">
+    <img class="emblem" src="index.icon.png" alt="실리아투스">
+    <h1>실리아투스 · 게코의 섬</h1>
+    <p class="subtitle">크레스티드 게코 키우기 비공개 웹 플레이테스트 빌드입니다.<br>전달받은 비밀번호를 입력해 입장해 주세요.</p>
+    <div class="pill">게코 16마리 풀세팅 · 새로고침 시 초기화</div>
+
+    <form id="unlock-form" autocomplete="off">
+      <div class="field-wrap">
+        <input id="pw-input" type="password" placeholder="비밀번호 입력" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" required>
+        <button type="button" class="toggle-eye" id="toggle-eye" aria-label="비밀번호 보기">보기</button>
+      </div>
+      <button type="submit" class="btn-enter" id="enter-btn">게코 섬 입장하기</button>
+    </form>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">준비 중...</div>
+    </div>
+    <div class="msg" id="msg" role="alert"></div>
+
+    <div class="foot-note">
+      입장 시 자동으로 16:9 가로 화면 고정 · PC · 아이폰 Safari · 안드로이드 지원<br>
+      별도 저장 없이 메모리로 실행되어 새로고침하면 처음 상태로 돌아갑니다.
+    </div>
+  </div>
+</div>
+
+<script>
+// Track all WebAudio contexts (including Godot's internal Emscripten AudioContext) so
+// iOS Safari / virtual-landscape trusted gestures reliably unlock audio before event remapping.
+(function () {
+  const tracked = [];
+  window.__chAudioContexts = tracked;
+  function wrapAudioCtx(Ctor) {
+    if (!Ctor || Ctor.__chWrapped) return Ctor;
+    const Wrapped = function (...args) {
+      const ctx = new Ctor(...args);
+      tracked.push(ctx);
+      return ctx;
+    };
+    Wrapped.prototype = Ctor.prototype;
+    Object.setPrototypeOf(Wrapped, Ctor);
+    Wrapped.__chWrapped = true;
+    return Wrapped;
+  }
+  if (window.AudioContext) window.AudioContext = wrapAudioCtx(window.AudioContext);
+  if (window.webkitAudioContext) window.webkitAudioContext = wrapAudioCtx(window.webkitAudioContext);
+  window.__chResumeAudio = function () {
+    for (let i = 0; i < tracked.length; i++) {
+      const ctx = tracked[i];
+      if (ctx && ctx.state && ctx.state !== "running" && typeof ctx.resume === "function") {
+        try { ctx.resume().catch(function () {}); } catch (_e) {}
+      }
+    }
+  };
+})();
+</script>
+<script src="index.js"></script>
+<script>
+(function () {
+  const PLAYTEST_META = {"salt":"E5OF3GzKCTeoNxbd2L7SDg==","iterations":600000,"canaryIv":"VSZ4cA4ULImSBY0x","canaryCt":"yUMAuGI1EWJVC30iZbbVybIvZbk2ieUSEN+RB1aiNCYKG5FTdi1qZHJn","encSize":7043604,"pckSize":7043556,"wasmSize":39514754,"buildId":"14121f0040-1795775688"};
+  const GODOT_CONFIG = {
+    "args": ["--main-pack", "index.pck"],
+    "canvasResizePolicy": 0,
+    "emscriptenPoolSize": 8,
+    "ensureCrossOriginIsolationHeaders": false,
+    "executable": "index",
+    "experimentalVK": true,
+    "fileSizes": {
+      "index.pck": PLAYTEST_META.pckSize,
+      "index.wasm": PLAYTEST_META.wasmSize
+    },
+    "focusCanvas": true,
+    "gdextensionLibs": [],
+    "godotPoolSize": 4
+  };
+
+  const gate = document.getElementById("gate");
+  const card = document.getElementById("gate-card");
+  const form = document.getElementById("unlock-form");
+  const pwInput = document.getElementById("pw-input");
+  const toggleEye = document.getElementById("toggle-eye");
+  const enterBtn = document.getElementById("enter-btn");
+  const msgEl = document.getElementById("msg");
+  const progressWrap = document.getElementById("progress-wrap");
+  const progressFill = document.getElementById("progress-fill");
+  const progressText = document.getElementById("progress-text");
+  const canvas = document.getElementById("canvas");
+
+  // =========================================================================
+  // Unconditional Automatic Landscape Lock (Hardware Fullscreen/Lock +
+  // Seamless 90deg Virtual Landscape Stage with Exact Touch/Mouse Remapping)
+  // =========================================================================
+  let isRotated = false;
+  let gameStarted = false;
+  let stageW = 1280;
+  let stageH = 720;
+  let stageLeft = 0;
+  let stageTop = 0;
+  let viewW = 1280;
+  let viewH = 720;
+
+  function isMobileTouch() {
+    return (
+      (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) ||
+      "ontouchstart" in window ||
+      (navigator.maxTouchPoints || 0) > 0
+    );
+  }
+
+  function requestNativeLandscape() {
+    if (!isMobileTouch()) return;
+    try {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      if (req) {
+        const p = req.call(el, { navigationUI: "hide" });
+        if (p && typeof p.then === "function") {
+          p.then(function () {
+            if (screen.orientation && screen.orientation.lock) {
+              screen.orientation.lock("landscape").catch(function () {});
+            }
+            setTimeout(syncStageLayout, 80);
+          }).catch(function () {});
+        }
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock("landscape").catch(function () {});
+      }
+    } catch (_err) {}
+  }
+
+  function syncStageLayout() {
+    const vvp = window.visualViewport;
+    const vw = Math.max(1, Math.round(vvp ? vvp.width : window.innerWidth));
+    const vh = Math.max(1, Math.round(vvp ? vvp.height : window.innerHeight));
+    const vOffX = vvp ? vvp.offsetLeft : 0;
+    const vOffY = vvp ? vvp.offsetTop : 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+    viewW = vw;
+    viewH = vh;
+
+    if (vw >= vh) {
+      // Native landscape (desktop or horizontally held / orientation-locked phone)
+      isRotated = false;
+      stageW = vw;
+      stageH = vh;
+      stageLeft = vOffX;
+      stageTop = vOffY;
+      canvas.style.left = stageLeft + "px";
+      canvas.style.top = stageTop + "px";
+      canvas.style.width = stageW + "px";
+      canvas.style.height = stageH + "px";
+      canvas.style.transform = "none";
+    } else if (isMobileTouch()) {
+      // Portrait mobile/tablet fallback (iOS Safari, KakaoTalk, portrait-locked Android):
+      // Automatically rotate stage +90deg CW to fill 100% of screen in true landscape!
+      isRotated = true;
+      stageW = vh;
+      stageH = vw;
+      stageLeft = vOffX;
+      stageTop = vOffY;
+      canvas.style.left = (vOffX + vw * 0.5) + "px";
+      canvas.style.top = (vOffY + vh * 0.5) + "px";
+      canvas.style.width = stageW + "px";
+      canvas.style.height = stageH + "px";
+      canvas.style.transform = "translate(-50%, -50%) rotate(90deg)";
+    } else {
+      // Narrow vertical desktop window: keep clean centered 16:9 landscape stage (never vertical UI)
+      isRotated = false;
+      stageW = vw;
+      stageH = Math.max(1, Math.round(vw * 9 / 16));
+      stageLeft = vOffX;
+      stageTop = vOffY + Math.round((vh - stageH) * 0.5);
+      canvas.style.left = stageLeft + "px";
+      canvas.style.top = stageTop + "px";
+      canvas.style.width = stageW + "px";
+      canvas.style.height = stageH + "px";
+      canvas.style.transform = "none";
+    }
+
+    const bw = Math.max(320, Math.round(stageW * dpr));
+    const bh = Math.max(180, Math.round(stageH * dpr));
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
+  }
+
+  // Override canvas.getBoundingClientRect ONLY while virtually rotated so Godot's
+  // computePosition() maps remapped local landscape coords (0..stageW, 0..stageH) with 0px error.
+  const nativeGetRect = canvas.getBoundingClientRect.bind(canvas);
+  canvas.getBoundingClientRect = function () {
+    if (!isRotated) return nativeGetRect();
+    return {
+      x: 0,
+      y: 0,
+      left: 0,
+      top: 0,
+      width: stageW,
+      height: stageH,
+      right: stageW,
+      bottom: stageH,
+      toJSON: function () {
+        return { x: 0, y: 0, left: 0, top: 0, width: stageW, height: stageH, right: stageW, bottom: stageH };
+      }
+    };
+  };
+
+  function mapScreenToRotated(sx, sy) {
+    // Inverse of +90deg CW rotation centered in (stageLeft..stageLeft+viewW, stageTop..stageTop+viewH):
+    //   u (landscape X) = sy - stageTop
+    //   v (landscape Y) = viewW - (sx - stageLeft)
+    return [sy - stageTop, viewW - (sx - stageLeft)];
+  }
+
+  function mapTouchList(list) {
+    const out = [];
+    if (!list) return out;
+    for (let i = 0; i < list.length; i++) {
+      const t = list[i];
+      const pt = mapScreenToRotated(t.clientX, t.clientY);
+      out.push({
+        identifier: t.identifier,
+        clientX: pt[0],
+        clientY: pt[1],
+        pageX: pt[0],
+        pageY: pt[1],
+        screenX: t.screenX,
+        screenY: t.screenY,
+        radiusX: t.radiusY || 0,
+        radiusY: t.radiusX || 0,
+        force: t.force || 0,
+        target: canvas
+      });
+    }
+    return out;
+  }
+
+  ["touchstart", "touchmove", "touchend", "touchcancel"].forEach(function (type) {
+    window.addEventListener(type, function (e) {
+      if (type === "touchstart" && window.__chResumeAudio) {
+        window.__chResumeAudio();
+      }
+      if (!isRotated || !gameStarted || e.__chRemapped) return;
+      if (e.target !== canvas) return;
+      e.stopImmediatePropagation();
+      if (e.cancelable) e.preventDefault();
+      const synth = new Event(type, { bubbles: true, cancelable: true });
+      synth.__chRemapped = true;
+      synth.changedTouches = mapTouchList(e.changedTouches);
+      synth.touches = mapTouchList(e.touches);
+      synth.targetTouches = mapTouchList(e.targetTouches);
+      canvas.dispatchEvent(synth);
+    }, { capture: true, passive: false });
+  });
+
+  ["mousedown", "mousemove", "mouseup"].forEach(function (type) {
+    window.addEventListener(type, function (e) {
+      if (type === "mousedown" && window.__chResumeAudio) {
+        window.__chResumeAudio();
+      }
+      if (!isRotated || !gameStarted || e.__chRemapped) return;
+      if (type === "mousedown" && e.target !== canvas) return;
+      e.stopImmediatePropagation();
+      if (e.cancelable) e.preventDefault();
+      const pt = mapScreenToRotated(e.clientX, e.clientY);
+      const synth = new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX: pt[0],
+        clientY: pt[1],
+        button: e.button,
+        buttons: e.buttons,
+        shiftKey: e.shiftKey,
+        ctrlKey: e.ctrlKey,
+        altKey: e.altKey,
+        metaKey: e.metaKey
+      });
+      if (type === "mousemove") {
+        try {
+          Object.defineProperty(synth, "movementX", { value: e.movementY || 0 });
+          Object.defineProperty(synth, "movementY", { value: -(e.movementX || 0) });
+        } catch (_err) {}
+      }
+      synth.__chRemapped = true;
+      canvas.dispatchEvent(synth);
+    }, true);
+  });
+
+  ["pointerdown", "pointermove", "pointerup", "pointercancel"].forEach(function (type) {
+    window.addEventListener(type, function (e) {
+      if (type === "pointerdown" && window.__chResumeAudio) {
+        window.__chResumeAudio();
+      }
+      if (!isRotated || !gameStarted || e.__chRemapped) return;
+      if (type === "pointerdown" && e.target !== canvas) return;
+      e.stopImmediatePropagation();
+      if (type !== "pointermove" && e.cancelable) e.preventDefault();
+      const pt = mapScreenToRotated(e.clientX, e.clientY);
+      const synth = new PointerEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX: pt[0],
+        clientY: pt[1],
+        button: e.button,
+        buttons: e.buttons,
+        pointerId: e.pointerId,
+        pointerType: e.pointerType,
+        pressure: e.pressure,
+        isPrimary: e.isPrimary,
+        shiftKey: e.shiftKey,
+        ctrlKey: e.ctrlKey,
+        altKey: e.altKey,
+        metaKey: e.metaKey
+      });
+      if (type === "pointermove") {
+        try {
+          Object.defineProperty(synth, "movementX", { value: e.movementY || 0 });
+          Object.defineProperty(synth, "movementY", { value: -(e.movementX || 0) });
+        } catch (_err) {}
+      }
+      synth.__chRemapped = true;
+      canvas.dispatchEvent(synth);
+    }, true);
+  });
+
+  window.addEventListener("wheel", function (e) {
+    if (!isRotated || !gameStarted || e.__chRemapped) return;
+    if (e.target !== canvas) return;
+    e.stopImmediatePropagation();
+    if (e.cancelable) e.preventDefault();
+    const pt = mapScreenToRotated(e.clientX, e.clientY);
+    const synth = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      clientX: pt[0],
+      clientY: pt[1],
+      deltaX: e.deltaY,
+      deltaY: -e.deltaX,
+      deltaZ: e.deltaZ,
+      deltaMode: e.deltaMode,
+      shiftKey: e.shiftKey,
+      ctrlKey: e.ctrlKey,
+      altKey: e.altKey,
+      metaKey: e.metaKey
+    });
+    synth.__chRemapped = true;
+    canvas.dispatchEvent(synth);
+  }, { capture: true, passive: false });
+
+  function scheduleLayoutSync() {
+    syncStageLayout();
+    setTimeout(syncStageLayout, 140);
+    setTimeout(syncStageLayout, 380);
+    setTimeout(syncStageLayout, 720);
+  }
+  window.addEventListener("resize", scheduleLayoutSync);
+  window.addEventListener("orientationchange", scheduleLayoutSync);
+  document.addEventListener("fullscreenchange", scheduleLayoutSync);
+  document.addEventListener("webkitfullscreenchange", scheduleLayoutSync);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", syncStageLayout);
+    window.visualViewport.addEventListener("scroll", syncStageLayout);
+  }
+  syncStageLayout();
+
+  function b64ToBytes(str) {
+    const bin = atob(str);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function setError(text) {
+    msgEl.className = "msg";
+    msgEl.textContent = text;
+    card.classList.remove("shake");
+    void card.offsetWidth;
+    card.classList.add("shake");
+  }
+
+  function setInfo(text) {
+    msgEl.className = "msg info";
+    msgEl.textContent = text;
+  }
+
+  function setProgress(pct, label) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    progressWrap.classList.add("active");
+    progressFill.style.width = clamped + "%";
+    progressText.textContent = label + " (" + clamped + "%)";
+  }
+
+  toggleEye.addEventListener("click", function () {
+    const isPw = pwInput.type === "password";
+    pwInput.type = isPw ? "text" : "password";
+    toggleEye.textContent = isPw ? "숨김" : "보기";
+    pwInput.focus();
+  });
+
+  async function deriveKey(password, saltBytes) {
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(password),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: saltBytes,
+        iterations: PLAYTEST_META.iterations,
+        hash: "SHA-256"
+      },
+      baseKey,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+  }
+
+  async function fetchWithProgress(url, expectedBytes, onBytes) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error("파일 다운로드 실패 (" + res.status + ")");
+    }
+    if (!res.body || !res.body.getReader) {
+      const buf = await res.arrayBuffer();
+      onBytes(buf.byteLength, expectedBytes || buf.byteLength);
+      return new Uint8Array(buf);
+    }
+    const reader = res.body.getReader();
+    const chunks = [];
+    let received = 0;
+    const total = Number(res.headers.get("content-length")) || expectedBytes || 0;
+    while (true) {
+      const step = await reader.read();
+      if (step.done) break;
+      chunks.push(step.value);
+      received += step.value.byteLength;
+      onBytes(received, total || received);
+    }
+    const joined = new Uint8Array(received);
+    let offset = 0;
+    for (const c of chunks) {
+      joined.set(c, offset);
+      offset += c.byteLength;
+    }
+    return joined;
+  }
+
+  if (!window.crypto || !window.crypto.subtle) {
+    setError("보안 연결(HTTPS)에서만 암호화를 해제할 수 있어요.");
+    enterBtn.disabled = true;
+    return;
+  }
+
+  const missing = Engine.getMissingFeatures({ threads: false });
+  if (missing.length !== 0) {
+    setError("이 브라우저에서 WebGL2/WASM 기능을 지원하지 않아요: " + missing.join(", "));
+    enterBtn.disabled = true;
+    return;
+  }
+
+  let busy = false;
+  form.addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    if (busy) return;
+    const pw = pwInput.value.trim();
+    if (!pw) {
+      setError("비밀번호를 입력해 주세요.");
+      return;
+    }
+    busy = true;
+    // Unlock WebAudio and request native fullscreen landscape synchronously inside the trusted submit gesture!
+    if (window.__chResumeAudio) window.__chResumeAudio();
+    requestNativeLandscape();
+    enterBtn.disabled = true;
+    pwInput.blur();
+    pwInput.disabled = true;
+    scheduleLayoutSync();
+    setInfo("비밀번호 확인 중...");
+
+    try {
+      const salt = b64ToBytes(PLAYTEST_META.salt);
+      const key = await deriveKey(pw, salt);
+
+      // 1. Fast cryptographic canary verification (rejects wrong password before downloading game pack)
+      try {
+        const canaryBuf = await crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: b64ToBytes(PLAYTEST_META.canaryIv) },
+          key,
+          b64ToBytes(PLAYTEST_META.canaryCt)
+        );
+        const canaryStr = new TextDecoder().decode(canaryBuf);
+        if (canaryStr !== "CREST_HOUSE_PLAYTEST_OK_V1") {
+          throw new Error("canary mismatch");
+        }
+      } catch (_authErr) {
+        setError("비밀번호가 맞지 않아요. 다시 확인해 주세요.");
+        busy = false;
+        enterBtn.disabled = false;
+        pwInput.disabled = false;
+        pwInput.select();
+        return;
+      }
+
+      setInfo("실리아투스 게코 섬을 불러오는 중입니다...");
+      setProgress(4, "엔진 및 리소스 다운로드");
+
+      let pckLoaded = 0;
+      let wasmLoaded = 0;
+      const totalExpected = PLAYTEST_META.encSize + PLAYTEST_META.wasmSize;
+      function updateDownloadBar() {
+        const ratio = (pckLoaded + wasmLoaded) / Math.max(1, totalExpected);
+        setProgress(5 + ratio * 75, "게임 섬 다운로드 중");
+      }
+
+      GODOT_CONFIG.onProgress = function (current, total) {
+        if (total > 0) {
+          wasmLoaded = Math.min(PLAYTEST_META.wasmSize, current);
+          updateDownloadBar();
+        }
+      };
+      const engine = new Engine(GODOT_CONFIG);
+
+      // 2. Download encrypted .pck and Godot WASM engine in parallel
+      const encPromise = fetchWithProgress(
+        "game.pck.enc?v=" + encodeURIComponent(PLAYTEST_META.buildId),
+        PLAYTEST_META.encSize,
+        function (cur) {
+          pckLoaded = cur;
+          updateDownloadBar();
+        }
+      );
+
+      const wasmPromise = engine.init("index");
+
+      const results = await Promise.all([encPromise, wasmPromise]);
+      const encBytes = results[0];
+      wasmLoaded = PLAYTEST_META.wasmSize;
+      setProgress(84, "암호화 해제 중");
+
+      // 3. Parse header [CHPW (4B) | salt (16B) | iv (12B) | ciphertext+tag] & AES-256-GCM decrypt
+      if (encBytes.byteLength < 32 ||
+          encBytes[0] !== 0x43 || encBytes[1] !== 0x48 || encBytes[2] !== 0x50 || encBytes[3] !== 0x57) {
+        throw new Error("손상된 게임 패키지입니다.");
+      }
+      const pckIv = encBytes.slice(20, 32);
+      const pckCt = encBytes.slice(32);
+      const decryptedPck = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: pckIv },
+        key,
+        pckCt
+      );
+
+      setProgress(93, "게코 섬 시작 중");
+      syncStageLayout();
+      await engine.preloadFile(decryptedPck, "index.pck");
+      await engine.start({
+        args: ["--main-pack", "index.pck"],
+        canvas: canvas
+      });
+
+      setProgress(100, "입장 완료");
+      gameStarted = true;
+      canvas.classList.add("ready");
+      gate.classList.add("hidden");
+      scheduleLayoutSync();
+      ["gesturestart", "gesturechange", "gestureend"].forEach(function (ev) {
+        canvas.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+      });
+      canvas.focus();
+    } catch (err) {
+      console.error(err);
+      setError("실행 중 오류가 발생했어요: " + (err && err.message ? err.message : String(err)));
+      busy = false;
+      enterBtn.disabled = false;
+      pwInput.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
